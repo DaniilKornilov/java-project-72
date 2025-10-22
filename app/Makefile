@@ -10,4 +10,7 @@ check-style-main:
 build:
 	./gradlew clean build
 
+run:
+	./gradlew run
+
 .PHONY: build

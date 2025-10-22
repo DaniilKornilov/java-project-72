@@ -12,3 +12,10 @@
 
 ### Hexlet tests and linter status:
 [![Actions Status](https://github.com/DaniilKornilov/java-project-72/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/DaniilKornilov/java-project-72/actions)
+
+## Run App
+```bash
+cd app && make run
+```
+
+http://localhost:7070

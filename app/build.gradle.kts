@@ -2,6 +2,7 @@ plugins {
     id("application")
     id("checkstyle")
     id("jacoco")
+    id("com.github.johnrengelman.shadow") version "8.1.1"
     id("com.github.ben-manes.versions") version "0.53.0"
     id("org.sonarqube") version "6.3.1.5724"
 }
@@ -48,6 +49,9 @@ sonar {
 }
 
 dependencies {
+    implementation("io.javalin:javalin:6.7.0")
+    implementation("org.slf4j:slf4j-simple:2.0.17")
+
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")
 }
 
