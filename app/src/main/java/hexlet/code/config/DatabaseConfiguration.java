@@ -17,6 +17,7 @@ public final class DatabaseConfiguration {
 
             if (jdbcUrl != null && !jdbcUrl.isEmpty()) {
                 config.setJdbcUrl(jdbcUrl);
+                config.setDriverClassName("org.postgresql.Driver");
             } else {
                 config.setJdbcUrl("jdbc:h2:mem:project");
             }
