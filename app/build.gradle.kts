@@ -4,7 +4,7 @@ plugins {
     id("jacoco")
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("com.github.ben-manes.versions") version "0.53.0"
-    id("org.sonarqube") version "6.3.1.5724"
+    id("org.sonarqube") version "7.0.0.6105"
 }
 
 group = "hexlet.code"
@@ -52,7 +52,11 @@ dependencies {
     implementation("io.javalin:javalin:6.7.0")
     implementation("org.slf4j:slf4j-simple:2.0.17")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")
+    implementation("com.zaxxer:HikariCP:7.0.2")
+    implementation("com.h2database:h2:2.4.240")
+    implementation("org.postgresql:postgresql:42.7.8")
+
+    testImplementation("org.junit.jupiter:junit-jupiter:6.0.0")
 }
 
 tasks.test {

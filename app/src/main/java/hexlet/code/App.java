@@ -1,22 +1,31 @@
 package hexlet.code;
 
+import hexlet.code.config.DatabaseConfiguration;
+import hexlet.code.config.DatabaseInitializer;
 import io.javalin.Javalin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sql.DataSource;
+
 public class App {
     private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
 
-    public static Javalin getApp() {
+    public static void main(String[] args) {
+        int port = getPort();
+        initDatabase();
+        LOGGER.info("Starting server on port {}", port);
+        getApp().start(port);
+    }
+
+    private static Javalin getApp() {
         return Javalin.create(config -> config.bundledPlugins.enableDevLogging())
                 .get("/", ctx -> ctx.result("Hello World"));
     }
 
-    public static void main(String[] args) {
-        int port = getPort();
-        LOGGER.info("Starting server on port {}", port);
-        Javalin app = getApp();
-        app.start(port);
+    private static void initDatabase() {
+        DataSource dataSource = DatabaseConfiguration.getDataSource();
+        DatabaseInitializer.init(dataSource);
     }
 
     private static int getPort() {

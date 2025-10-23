@@ -1,25 +1,23 @@
-FROM openjdk:21-jdk-slim as builder
+FROM eclipse-temurin:21-jdk-alpine AS builder
 
 WORKDIR /app
 
-COPY app/build.gradle.kts app/settings.gradle.kts ./
-COPY app/gradle/wrapper/gradle-wrapper.jar gradle/wrapper/gradle-wrapper.jar
-COPY app/gradle/wrapper/gradle-wrapper.properties gradle/wrapper/gradle-wrapper.properties
-COPY app/gradlew .
+COPY app/gradlew app/*.gradle.kts ./
+COPY app/gradle/wrapper/ gradle/wrapper/
 RUN chmod +x gradlew
 
-RUN ./gradlew build -x test --no-daemon || return 0
+RUN ./gradlew dependencies --no-daemon
 
 COPY app/src ./src
 RUN ./gradlew shadowJar --no-daemon
 
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
 COPY --from=builder /app/build/libs/*-all.jar app.jar
 
-RUN groupadd -r javalinuser && useradd -r -g javalinuser javalinuser
+RUN addgroup -S javalinuser && adduser -S javalinuser -G javalinuser
 USER javalinuser
 
 EXPOSE 7070
