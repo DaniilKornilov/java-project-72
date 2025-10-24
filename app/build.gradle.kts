@@ -1,3 +1,12 @@
+val junitVersion = "6.0.0"
+val jteVersion = "3.2.1"
+val javalinVersion = "6.7.0"
+val sl4jVersion = "2.0.17"
+val hikariVersion = "7.0.2"
+val h2Version = "2.4.240"
+val postgresVersion = "42.7.8"
+val lombokVersion = "1.18.42"
+
 plugins {
     id("application")
     id("checkstyle")
@@ -49,14 +58,24 @@ sonar {
 }
 
 dependencies {
-    implementation("io.javalin:javalin:6.7.0")
-    implementation("org.slf4j:slf4j-simple:2.0.17")
+    implementation("io.javalin:javalin:$javalinVersion")
+    implementation("io.javalin:javalin-rendering:$javalinVersion")
 
-    implementation("com.zaxxer:HikariCP:7.0.2")
-    implementation("com.h2database:h2:2.4.240")
-    implementation("org.postgresql:postgresql:42.7.8")
+    implementation("org.slf4j:slf4j-simple:$sl4jVersion")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:6.0.0")
+    implementation("com.zaxxer:HikariCP:$hikariVersion")
+    implementation("com.h2database:h2:$h2Version")
+    implementation("org.postgresql:postgresql:$postgresVersion")
+
+    implementation("gg.jte:jte:$jteVersion")
+
+    compileOnly("org.projectlombok:lombok:$lombokVersion")
+    annotationProcessor("org.projectlombok:lombok:$lombokVersion")
+
+    testCompileOnly("org.projectlombok:lombok:$lombokVersion")
+    testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
+
+    testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
 }
 
 tasks.test {

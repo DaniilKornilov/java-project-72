@@ -6,6 +6,9 @@ import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
 
 public final class DatabaseConfiguration {
+    private DatabaseConfiguration() {
+    }
+
     private static final int MAX_POOL_SIZE = 10;
 
     private static HikariDataSource dataSource;
