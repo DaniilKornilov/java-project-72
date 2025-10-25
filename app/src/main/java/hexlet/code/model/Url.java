@@ -1,11 +1,8 @@
 package hexlet.code.model;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
-record Url(Long id,
-           String name,
-           LocalDateTime createdAt) {
-    Url(String urlName, LocalDateTime urlCreatedAt) {
-        this(null, urlName, urlCreatedAt);
-    }
+public record Url(Long id,
+                  String name,
+                  Timestamp createdAt) {
 }

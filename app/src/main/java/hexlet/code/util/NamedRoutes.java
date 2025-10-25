@@ -1,12 +1,13 @@
 package hexlet.code.util;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NamedRoutes {
     private static final String ROOT_PATH = "/";
     private static final String URLS_PATH = "/urls";
     private static final String CHECKS_PATH = "/checks";
-
-    private NamedRoutes() {
-    }
 
     public static String rootPath() {
         return ROOT_PATH;

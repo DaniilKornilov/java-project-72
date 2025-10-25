@@ -1,6 +1,8 @@
 package hexlet.code.config;
 
-import hexlet.code.config.exception.DatabaseInitializationException;
+import hexlet.code.exception.DatabaseInitializationException;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import javax.sql.DataSource;
 import java.io.BufferedReader;
@@ -12,10 +14,8 @@ import java.sql.Statement;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DatabaseInitializer {
-    private DatabaseInitializer() {
-    }
-
     private static final String INIT_SQL = "/db/init.sql";
 
     public static void init(DataSource dataSource) {

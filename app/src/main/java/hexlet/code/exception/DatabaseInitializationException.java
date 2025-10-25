@@ -1,6 +1,6 @@
-package hexlet.code.config.exception;
+package hexlet.code.exception;
 
-public class DatabaseInitializationException extends RuntimeException {
+public final class DatabaseInitializationException extends RuntimeException {
     public DatabaseInitializationException(String message, Throwable cause) {
         super(message, cause);
     }

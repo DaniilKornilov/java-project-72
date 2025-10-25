@@ -2,13 +2,13 @@ package hexlet.code.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import javax.sql.DataSource;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DatabaseConfiguration {
-    private DatabaseConfiguration() {
-    }
-
     private static final int MAX_POOL_SIZE = 10;
 
     private static HikariDataSource dataSource;

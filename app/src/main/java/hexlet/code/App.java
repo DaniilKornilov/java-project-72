@@ -5,28 +5,47 @@ import gg.jte.TemplateEngine;
 import gg.jte.resolve.ResourceCodeResolver;
 import hexlet.code.config.DatabaseConfiguration;
 import hexlet.code.config.DatabaseInitializer;
+import hexlet.code.controller.RootController;
+import hexlet.code.controller.UrlController;
+import hexlet.code.repository.UrlRepository;
+import hexlet.code.service.UrlService;
 import io.javalin.Javalin;
 import io.javalin.rendering.template.JavalinJte;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.sql.DataSource;
 
-public class App {
-    private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
-
+@Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class App {
     public static void main(String[] args) {
         int port = getPort();
         initDatabase();
-        LOGGER.info("Starting server on port {}", port);
+        log.info("Starting server on port {}", port);
         getApp().start(port);
     }
 
     private static Javalin getApp() {
-        return Javalin.create(config -> {
+        DataSource dataSource = DatabaseConfiguration.getDataSource();
+        UrlRepository urlRepository = new UrlRepository(dataSource);
+
+        UrlService urlService = new UrlService(urlRepository);
+        UrlController urlController = new UrlController(urlService);
+
+        RootController rootController = new RootController();
+
+        Javalin javalin = Javalin.create(config -> {
             config.bundledPlugins.enableDevLogging();
             config.fileRenderer(new JavalinJte(createTemplateEngine()));
-        }).get("/", ctx -> ctx.render("index.jte"));
+        });
+        javalin.get("/", rootController::showMainPage);
+        javalin.post("/urls", urlController::addUrl);
+        javalin.get("/urls", urlController::listUrls);
+        javalin.get("/urls/{id}", urlController::showUrl);
+
+        return javalin;
     }
 
     private static void initDatabase() {
