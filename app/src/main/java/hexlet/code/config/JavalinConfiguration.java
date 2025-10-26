@@ -7,6 +7,7 @@ import hexlet.code.App;
 import hexlet.code.controller.RootController;
 import hexlet.code.controller.UrlController;
 import hexlet.code.repository.UrlRepository;
+import hexlet.code.repository.UrlCheckRepository;
 import hexlet.code.service.UrlService;
 import hexlet.code.util.NamedRoutes;
 import io.javalin.Javalin;
@@ -22,8 +23,9 @@ public final class JavalinConfiguration {
         DataSource dataSource = DatabaseConfiguration.getDataSource();
         DatabaseInitializer.init(dataSource);
         UrlRepository urlRepository = new UrlRepository(dataSource);
+        UrlCheckRepository urlCheckRepository = new UrlCheckRepository(dataSource);
 
-        UrlService urlService = new UrlService(urlRepository);
+        UrlService urlService = new UrlService(urlRepository, urlCheckRepository);
         UrlController urlController = new UrlController(urlService);
 
         RootController rootController = new RootController();
@@ -36,6 +38,7 @@ public final class JavalinConfiguration {
         javalin.post(NamedRoutes.urlsPath(), urlController::addUrl);
         javalin.get(NamedRoutes.urlsPath(), urlController::listUrls);
         javalin.get(NamedRoutes.urlsPath() + "/{id}", urlController::showUrl);
+        javalin.post(NamedRoutes.urlChecksPath("/{id}"), urlController::createCheck);
 
         return javalin;
     }

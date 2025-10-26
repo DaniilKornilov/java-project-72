@@ -1,12 +1,15 @@
-val junitVersion = "6.0.0"
 val jteVersion = "3.2.1"
 val javalinVersion = "6.7.0"
+val jSoupVersion = "1.21.2"
 val sl4jVersion = "2.0.17"
 val hikariVersion = "7.0.2"
 val h2Version = "2.4.240"
 val postgresVersion = "42.7.8"
 val lombokVersion = "1.18.42"
+val uniRestVersion = "3.14.5"
 val assertJVersion = "3.27.6"
+val mockServerVersion = "5.2.1"
+val junitVersion = "6.0.0"
 
 plugins {
     id("application")
@@ -14,7 +17,7 @@ plugins {
     id("jacoco")
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("com.github.ben-manes.versions") version "0.53.0"
-    id("org.sonarqube") version "7.0.0.6105"
+    id("org.sonarqube") version "7.0.1.6134"
 }
 
 group = "hexlet.code"
@@ -70,17 +73,18 @@ dependencies {
 
     implementation("gg.jte:jte:$jteVersion")
 
+    implementation("com.konghq:unirest-java:$uniRestVersion")
+    implementation("org.jsoup:jsoup:$jSoupVersion")
+
     compileOnly("org.projectlombok:lombok:$lombokVersion")
     annotationProcessor("org.projectlombok:lombok:$lombokVersion")
-
-    testCompileOnly("org.projectlombok:lombok:$lombokVersion")
-    testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation(platform("org.junit:junit-bom:$junitVersion"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.assertj:assertj-core:$assertJVersion")
-    testImplementation("io.javalin:javalin-testtools:${javalinVersion}")
+    testImplementation("io.javalin:javalin-testtools:$javalinVersion")
+    testImplementation("com.squareup.okhttp3:mockwebserver:$mockServerVersion")
 }
 
 tasks.test {

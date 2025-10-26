@@ -7,7 +7,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -61,15 +60,10 @@ public final class UrlRepository extends BaseRepository {
     public void save(String name) throws SQLException {
         String sql = "INSERT INTO urls (name, created_at) VALUES (?, ?)";
         try (Connection connection = getDataSource().getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, name);
             statement.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
             statement.executeUpdate();
-            ResultSet resultSet = statement.getGeneratedKeys();
-            if (resultSet.next()) {
-                return;
-            }
-            throw new SQLException("Failed to insert url");
         }
     }
 
