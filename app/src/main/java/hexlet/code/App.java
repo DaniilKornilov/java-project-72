@@ -1,10 +1,10 @@
 package hexlet.code;
 
+import hexlet.code.config.JavalinConfiguration;
+import io.javalin.Javalin;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import static hexlet.code.config.JavalinConfiguration.getApp;
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -13,6 +13,10 @@ public final class App {
         int port = getPort();
         log.info("Starting server on port {}", port);
         getApp().start(port);
+    }
+
+    public static Javalin getApp() {
+        return JavalinConfiguration.getApp();
     }
 
     private static int getPort() {

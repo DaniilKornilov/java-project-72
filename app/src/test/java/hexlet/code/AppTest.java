@@ -1,7 +1,6 @@
 package hexlet.code;
 
 import hexlet.code.config.DatabaseConfiguration;
-import hexlet.code.config.JavalinConfiguration;
 import hexlet.code.model.Url;
 import hexlet.code.repository.UrlCheckRepository;
 import hexlet.code.repository.UrlRepository;
@@ -36,7 +35,7 @@ final class AppTest {
 
     @BeforeEach
     void setUp() throws SQLException {
-        app = JavalinConfiguration.getApp();
+        app = App.getApp();
         DataSource dataSource = DatabaseConfiguration.getDataSource();
         urlRepository = new UrlRepository(dataSource);
         urlCheckRepository = new UrlCheckRepository(dataSource);
