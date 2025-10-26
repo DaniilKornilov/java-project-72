@@ -19,3 +19,7 @@ cd app && make run
 ```
 
 http://localhost:7070
+
+## App is running on Render.com
+
+https://java-project-72-hcun.onrender.com

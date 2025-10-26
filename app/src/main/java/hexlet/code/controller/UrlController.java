@@ -8,14 +8,13 @@ import hexlet.code.service.UrlService;
 import io.javalin.http.Context;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 import static hexlet.code.util.JteUtils.handleError;
 import static hexlet.code.util.JteUtils.renderTemplate;
 import static hexlet.code.util.JteUtils.setFlashMessage;
 import static io.javalin.http.HttpStatus.BAD_REQUEST;
 import static io.javalin.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static io.javalin.http.HttpStatus.NOT_FOUND;
 
 public record UrlController(UrlService urlService) {
     public void addUrl(Context ctx) {
@@ -29,7 +28,7 @@ public record UrlController(UrlService urlService) {
         try {
             List<Url> urls = urlService.findAll();
             List<Long> ids = urls.stream().map(Url::id).toList();
-            var latestChecks = urlService.findLatestForUrls(ids);
+            Map<Long, UrlCheck> latestChecks = urlService.findLatestForUrls(ids);
 
             UrlsPage page = new UrlsPage(urls, latestChecks);
             setFlashMessage(ctx, page);
@@ -42,15 +41,10 @@ public record UrlController(UrlService urlService) {
     public void showUrl(Context ctx) {
         try {
             Long id = Long.valueOf(ctx.pathParam("id"));
-            Optional<Url> urlOptional = urlService.findById(id);
-
-            if (urlOptional.isEmpty()) {
-                ctx.status(NOT_FOUND.getCode()).result("URL не найден");
-                return;
-            }
+            Url url = urlService.findById(id).orElseThrow(() -> new IllegalArgumentException("URL not found"));
             List<UrlCheck> checks = urlService.findByUrlId(id);
 
-            UrlPage page = new UrlPage(urlOptional.get(), checks);
+            UrlPage page = new UrlPage(url, checks);
             setFlashMessage(ctx, page);
             renderTemplate(ctx, "urls/show.jte", page);
         } catch (NumberFormatException e) {

@@ -49,16 +49,8 @@ public record UrlService(UrlRepository urlRepository, UrlCheckRepository urlChec
             Optional<Url> urlOptional = urlRepository.findById(urlId);
             Url url = urlOptional.orElseThrow(() -> new IllegalArgumentException("URL not found"));
             HttpResponse<String> response = Unirest.get(url.name()).asString();
-            int status = response.getStatus();
 
-            Document document = Jsoup.parse(response.getBody());
-            String title = document.title();
-            Element h1Element = document.selectFirst("h1");
-            String h1 = h1Element == null ? "" : h1Element.text();
-            Element descriptionElement = document.selectFirst("meta[name=description]");
-            String description = descriptionElement == null ? "" : descriptionElement.attr("content");
-
-            urlCheckRepository.save(new UrlCheck(urlId, status, title, h1, description));
+            urlCheckRepository.save(constructCheck(urlId, response));
             return UrlProcessingResult.checkSuccess(urlId);
         } catch (Exception e) {
             log.error("Error while checking url {}", urlId, e);
@@ -80,6 +72,18 @@ public record UrlService(UrlRepository urlRepository, UrlCheckRepository urlChec
 
     public List<Url> findAll() throws SQLException {
         return urlRepository.findAll();
+    }
+
+    private UrlCheck constructCheck(Long urlId, HttpResponse<String> response) {
+        int status = response.getStatus();
+        Document document = Jsoup.parse(response.getBody());
+        String title = document.title();
+        Element h1Element = document.selectFirst("h1");
+        String h1 = h1Element == null ? "" : h1Element.text();
+        Element descriptionElement = document.selectFirst("meta[name=description]");
+        String description = descriptionElement == null ? "" : descriptionElement.attr("content");
+
+        return new UrlCheck(urlId, status, title, h1, description);
     }
 
     @Getter
