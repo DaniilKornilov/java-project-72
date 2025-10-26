@@ -6,6 +6,7 @@ val hikariVersion = "7.0.2"
 val h2Version = "2.4.240"
 val postgresVersion = "42.7.8"
 val lombokVersion = "1.18.42"
+val assertJVersion = "3.27.6"
 
 plugins {
     id("application")
@@ -75,7 +76,11 @@ dependencies {
     testCompileOnly("org.projectlombok:lombok:$lombokVersion")
     testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation(platform("org.junit:junit-bom:$junitVersion"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.assertj:assertj-core:$assertJVersion")
+    testImplementation("io.javalin:javalin-testtools:${javalinVersion}")
 }
 
 tasks.test {

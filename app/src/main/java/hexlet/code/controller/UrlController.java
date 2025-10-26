@@ -9,7 +9,6 @@ import io.javalin.http.Context;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static hexlet.code.util.JteUtils.handleError;
@@ -32,7 +31,7 @@ public record UrlController(UrlService urlService) {
             List<Url> urls = urlService.findAll();
             UrlsPage page = new UrlsPage(urls, new HashMap<>());
             setFlashMessage(ctx, page);
-            renderTemplate(ctx, "urls/index.jte", Map.of("page", page));
+            renderTemplate(ctx, "urls/index.jte", page);
         } catch (Exception e) {
             handleError(ctx, "Ошибка при получении списка сайтов", INTERNAL_SERVER_ERROR.getCode());
         }
@@ -50,7 +49,7 @@ public record UrlController(UrlService urlService) {
 
             UrlPage page = new UrlPage(urlOptional.get(), new ArrayList<>());
             setFlashMessage(ctx, page);
-            renderTemplate(ctx, "urls/show.jte", Map.of("page", page));
+            renderTemplate(ctx, "urls/show.jte", page);
         } catch (NumberFormatException e) {
             handleError(ctx, "Неверный формат ID", BAD_REQUEST.getCode());
         } catch (Exception e) {

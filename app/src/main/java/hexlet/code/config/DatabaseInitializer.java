@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import javax.sql.DataSource;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Connection;
@@ -19,22 +20,19 @@ public final class DatabaseInitializer {
     private static final String INIT_SQL = "/db/init.sql";
 
     public static void init(DataSource dataSource) {
-        String sql = readInitSqlFromResource();
-
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
+            String sql = readInitSqlFromResource();
             statement.execute(sql);
-        } catch (SQLException e) {
+        } catch (SQLException | IOException e) {
             throw new DatabaseInitializationException("Failed to execute Init SQL statement", e);
         }
     }
 
-    private static String readInitSqlFromResource() {
+    private static String readInitSqlFromResource() throws IOException {
         try (InputStream is = DatabaseInitializer.class.getResourceAsStream(DatabaseInitializer.INIT_SQL);
              BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(is)))) {
             return reader.lines().collect(Collectors.joining("\n"));
-        } catch (Exception e) {
-            throw new DatabaseInitializationException("Failed to read SQL file: " + DatabaseInitializer.INIT_SQL, e);
         }
     }
 }
