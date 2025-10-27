@@ -11,11 +11,14 @@ import hexlet.code.repository.UrlCheckRepository;
 import hexlet.code.service.UrlService;
 import hexlet.code.util.NamedRoutes;
 import io.javalin.Javalin;
+import io.javalin.http.HttpStatus;
 import io.javalin.rendering.template.JavalinJte;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import javax.sql.DataSource;
+
+import static hexlet.code.util.JteUtils.handleError;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class JavalinConfiguration {
@@ -39,6 +42,12 @@ public final class JavalinConfiguration {
         javalin.get(NamedRoutes.urlsPath(), urlController::listUrls);
         javalin.get(NamedRoutes.urlsPath() + "/{id}", urlController::showUrl);
         javalin.post(NamedRoutes.urlChecksPath("/{id}"), urlController::createCheck);
+
+        javalin.exception(Exception.class, (e, ctx) ->
+                handleError(ctx, "Internal server error", HttpStatus.INTERNAL_SERVER_ERROR.getCode()));
+
+        javalin.exception(IllegalArgumentException.class, (e, ctx) ->
+                handleError(ctx, e.getMessage(), HttpStatus.BAD_REQUEST.getCode()));
 
         return javalin;
     }

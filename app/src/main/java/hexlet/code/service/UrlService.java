@@ -1,5 +1,6 @@
 package hexlet.code.service;
 
+import hexlet.code.exception.DatabaseAccessException;
 import hexlet.code.message.FlashMessage;
 import hexlet.code.model.Url;
 import hexlet.code.model.UrlCheck;
@@ -58,20 +59,36 @@ public record UrlService(UrlRepository urlRepository, UrlCheckRepository urlChec
         }
     }
 
-    public Map<Long, UrlCheck> findLatestForUrls(List<Long> urlIds) throws SQLException {
-        return urlCheckRepository.findLatestForUrls(urlIds);
+    public Map<Long, UrlCheck> findLatestForUrls(List<Long> urlIds) {
+        try {
+            return urlCheckRepository.findLatestForUrls(urlIds);
+        } catch (SQLException e) {
+            throw new DatabaseAccessException("Failed to fetch latest UrlChecks for Urls: " + urlIds);
+        }
     }
 
-    public List<UrlCheck> findByUrlId(Long urlId) throws SQLException {
-        return urlCheckRepository.findByUrlId(urlId);
+    public List<UrlCheck> findByUrlId(Long urlId) {
+        try {
+            return urlCheckRepository.findByUrlId(urlId);
+        } catch (SQLException e) {
+            throw new DatabaseAccessException("Failed to fetch checks by Url: " + urlId);
+        }
     }
 
-    public Optional<Url> findById(Long id) throws SQLException {
-        return urlRepository.findById(id);
+    public Optional<Url> findById(Long id) {
+        try {
+            return urlRepository.findById(id);
+        } catch (SQLException e) {
+            throw new DatabaseAccessException("Failed to fetch Url by id: " + id);
+        }
     }
 
-    public List<Url> findAll() throws SQLException {
-        return urlRepository.findAll();
+    public List<Url> findAll() {
+        try {
+            return urlRepository.findAll();
+        } catch (SQLException e) {
+            throw new DatabaseAccessException("Failed to fetch all Urls");
+        }
     }
 
     private UrlCheck constructCheck(Long urlId, HttpResponse<String> response) {

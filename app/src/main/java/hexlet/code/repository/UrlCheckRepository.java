@@ -90,7 +90,7 @@ public final class UrlCheckRepository extends BaseRepository {
                 rs.getString("title"),
                 rs.getString("h1"),
                 rs.getString("description"),
-                rs.getTimestamp("created_at")
+                rs.getTimestamp("created_at").toLocalDateTime()
         );
     }
 }

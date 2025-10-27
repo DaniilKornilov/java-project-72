@@ -1,6 +1,6 @@
 package hexlet.code.model;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 public record UrlCheck(
         Long id,
@@ -9,7 +9,7 @@ public record UrlCheck(
         String title,
         String h1,
         String description,
-        Timestamp createdAt
+        LocalDateTime createdAt
 ) {
     public UrlCheck(
             Long urlIdParam,

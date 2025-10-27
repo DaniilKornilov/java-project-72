@@ -33,7 +33,7 @@ content = @`
                     </td>
                     <td>
                         @if(urlCheck != null)
-                            ${urlCheck.createdAt().toLocalDateTime().format(formatter)}
+                            ${urlCheck.createdAt().format(formatter)}
                         @else
                             <span class="text-muted">—</span>
                         @endif

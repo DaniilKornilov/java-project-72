@@ -57,7 +57,7 @@ content = @`
                     <td>${check.title()}</td>
                     <td>${check.h1()}</td>
                     <td>${check.description()}</td>
-                    <td>${check.createdAt().toLocalDateTime().format(formatter)}</td>
+                    <td>${check.createdAt().format(formatter)}</td>
                 </tr>
             @endfor
             </tbody>
