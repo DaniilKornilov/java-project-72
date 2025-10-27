@@ -14,7 +14,7 @@ content = @`
                     <form action="${NamedRoutes.urlsPath()}" method="post" class="mt-4">
                         <div class="row g-2">
                             <div class="col-md-9">
-                                <input id="url-input" type="url" name="url" required
+                                <input id="url-input" type="text" name="url" required
                                        class="form-control form-control-lg"
                                        placeholder="https://example.com" aria-label="url">
                             </div>

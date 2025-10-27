@@ -26,23 +26,27 @@ import java.util.Optional;
 @Slf4j
 public record UrlService(UrlRepository urlRepository, UrlCheckRepository urlCheckRepository) {
     public UrlProcessingResult createUrl(String url) {
+        String normalizedUrl;
         try {
-            String normalizedUrl = UrlNormalizer.normalize(url);
-            Optional<Url> existingUrl = urlRepository.findByName(normalizedUrl);
-
-            if (existingUrl.isPresent()) {
-                return UrlProcessingResult.alreadyExists();
-            }
-
-            urlRepository.save(normalizedUrl);
-            return UrlProcessingResult.success();
+            normalizedUrl = UrlNormalizer.normalize(url);
         } catch (IllegalArgumentException e) {
             log.warn("Invalid URL provided: {}", url, e);
             return UrlProcessingResult.invalidUrl();
-        } catch (Exception e) {
+        }
+
+        try {
+            Optional<Url> existingUrl = urlRepository.findByName(normalizedUrl);
+            if (existingUrl.isPresent()) {
+                log.warn("Existing URL provided: {}", url);
+                return UrlProcessingResult.alreadyExists();
+            }
+            urlRepository.save(normalizedUrl);
+        } catch (SQLException e) {
             log.error("Error creating URL: {}", url, e);
             return UrlProcessingResult.error();
         }
+
+        return UrlProcessingResult.success();
     }
 
     public UrlProcessingResult createCheck(Long urlId) {
@@ -52,11 +56,12 @@ public record UrlService(UrlRepository urlRepository, UrlCheckRepository urlChec
             HttpResponse<String> response = Unirest.get(url.name()).asString();
 
             urlCheckRepository.save(constructCheck(urlId, response));
-            return UrlProcessingResult.checkSuccess(urlId);
         } catch (Exception e) {
             log.error("Error while checking url {}", urlId, e);
             return UrlProcessingResult.checkError();
         }
+
+        return UrlProcessingResult.checkSuccess(urlId);
     }
 
     public Map<Long, UrlCheck> findLatestForUrls(List<Long> urlIds) {
