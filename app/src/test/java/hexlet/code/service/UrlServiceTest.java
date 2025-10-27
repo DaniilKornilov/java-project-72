@@ -47,7 +47,7 @@ final class UrlServiceTest extends BaseTest {
     }
 
     @Test
-    void testCreateUrlInvalid() throws SQLException {
+    void testCreateUrlInvalid() {
         UrlService.UrlProcessingResult result = urlService.createUrl("not a url");
         assertThat(result.isSuccess()).isFalse();
         assertThat(result.getFlashMessage().message()).isEqualTo("Некорректный URL");
