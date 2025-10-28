@@ -28,7 +28,13 @@ public final class JteUtils {
         ctx.render(template, Map.of(PAGE_PARAM, page));
     }
 
-    public static void handleError(Context ctx, String message, int status) {
-        ctx.status(status).result(message);
+    public static void redirect(Context ctx, String location) {
+        ctx.redirect(location);
+    }
+
+    public static void handleError(Context ctx, FlashMessage message, String redirect, int status) {
+        setFlashMessage(ctx, message);
+        ctx.status(status).result(message.message());
+        redirect(ctx, redirect);
     }
 }

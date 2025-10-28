@@ -1,51 +1,49 @@
 package hexlet.code.controller;
 
+import hexlet.code.dto.ListUrlsResponse;
+import hexlet.code.dto.ShowUrlResponse;
+import hexlet.code.message.FlashMessage;
+import hexlet.code.message.FlashType;
 import hexlet.code.page.UrlPage;
-import hexlet.code.model.Url;
-import hexlet.code.model.UrlCheck;
 import hexlet.code.page.UrlsPage;
 import hexlet.code.service.UrlService;
+import hexlet.code.util.NamedRoutes;
 import io.javalin.http.Context;
 
-import java.util.List;
-import java.util.Map;
-
+import static hexlet.code.util.JteUtils.redirect;
 import static hexlet.code.util.JteUtils.renderTemplate;
 import static hexlet.code.util.JteUtils.setFlashMessage;
 
 public record UrlController(UrlService urlService) {
     public void addUrl(Context ctx) {
-        UrlService.UrlProcessingResult result = urlService.createUrl(ctx.formParam("url"));
+        urlService.createUrl(ctx.formParam("url"));
 
-        setFlashMessage(ctx, result.getFlashMessage());
-        ctx.redirect(result.getRedirectPath());
+        setFlashMessage(ctx, new FlashMessage("Страница успешно добавлена", FlashType.SUCCESS));
+        redirect(ctx, NamedRoutes.urlsPath());
     }
 
     public void listUrls(Context ctx) {
-        List<Url> urls = urlService.findAll();
-        List<Long> ids = urls.stream().map(Url::id).toList();
-        Map<Long, UrlCheck> latestChecks = urlService.findLatestForUrls(ids);
+        ListUrlsResponse response = urlService.listUrls();
 
-        UrlsPage page = new UrlsPage(urls, latestChecks);
+        UrlsPage page = new UrlsPage(response.urls(), response.latestChecks());
         setFlashMessage(ctx, page);
         renderTemplate(ctx, "urls/index.jte", page);
     }
 
     public void showUrl(Context ctx) {
-        Long id = Long.valueOf(ctx.pathParam("id"));
-        Url url = urlService.findById(id).orElseThrow(() -> new IllegalArgumentException("URL not found"));
-        List<UrlCheck> checks = urlService.findByUrlId(id);
+        long id = Long.parseLong(ctx.pathParam("id"));
+        ShowUrlResponse response = urlService.showUrl(id);
 
-        UrlPage page = new UrlPage(url, checks);
+        UrlPage page = new UrlPage(response.url(), response.checks());
         setFlashMessage(ctx, page);
         renderTemplate(ctx, "urls/show.jte", page);
     }
 
     public void createCheck(Context ctx) {
-        Long id = Long.valueOf(ctx.pathParam("id"));
-        UrlService.UrlProcessingResult result = urlService.createCheck(id);
+        long id = Long.parseLong(ctx.pathParam("id"));
+        urlService.createCheck(id);
 
-        setFlashMessage(ctx, result.getFlashMessage());
-        ctx.redirect(result.getRedirectPath());
+        setFlashMessage(ctx, new FlashMessage("Проверка успешно добавлена", FlashType.SUCCESS));
+        redirect(ctx, NamedRoutes.urlsPath() + "/" + id);
     }
 }

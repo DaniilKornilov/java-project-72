@@ -1,19 +1,16 @@
 package hexlet.code.service;
 
-import hexlet.code.exception.DatabaseAccessException;
-import hexlet.code.message.FlashMessage;
+import hexlet.code.dto.ListUrlsResponse;
+import hexlet.code.dto.ShowUrlResponse;
+import hexlet.code.exception.UrlAlreadyExistsException;
 import hexlet.code.model.Url;
 import hexlet.code.model.UrlCheck;
 import hexlet.code.repository.UrlCheckRepository;
 import hexlet.code.repository.UrlRepository;
-import hexlet.code.message.FlashType;
-import hexlet.code.util.NamedRoutes;
 import hexlet.code.util.UrlNormalizer;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.SneakyThrows;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -23,77 +20,43 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Slf4j
 public record UrlService(UrlRepository urlRepository, UrlCheckRepository urlCheckRepository) {
-    public UrlProcessingResult createUrl(String url) {
-        String normalizedUrl;
-        try {
-            normalizedUrl = UrlNormalizer.normalize(url);
-        } catch (IllegalArgumentException e) {
-            log.warn("Invalid URL provided: {}", url, e);
-            return UrlProcessingResult.invalidUrl();
+
+    @SneakyThrows(SQLException.class)
+    public void createUrl(String url) {
+        String normalizedUrl = UrlNormalizer.normalize(url);
+
+        Optional<Url> existingUrl = urlRepository.findByName(normalizedUrl);
+        if (existingUrl.isPresent()) {
+            throw new UrlAlreadyExistsException("Existing URL provided: " + url);
         }
 
-        try {
-            Optional<Url> existingUrl = urlRepository.findByName(normalizedUrl);
-            if (existingUrl.isPresent()) {
-                log.warn("Existing URL provided: {}", url);
-                return UrlProcessingResult.alreadyExists();
-            }
-            urlRepository.save(normalizedUrl);
-        } catch (SQLException e) {
-            log.error("Error creating URL: {}", url, e);
-            return UrlProcessingResult.error();
-        }
-
-        return UrlProcessingResult.success();
+        urlRepository.save(normalizedUrl);
     }
 
-    public UrlProcessingResult createCheck(Long urlId) {
-        try {
-            Optional<Url> urlOptional = urlRepository.findById(urlId);
-            Url url = urlOptional.orElseThrow(() -> new IllegalArgumentException("URL not found"));
-            HttpResponse<String> response = Unirest.get(url.name()).asString();
+    @SneakyThrows(SQLException.class)
+    public void createCheck(long urlId) {
+        Url url = urlRepository.findById(urlId).orElseThrow(() -> new IllegalArgumentException("URL not found"));
+        HttpResponse<String> response = Unirest.get(url.name()).asString();
 
-            urlCheckRepository.save(constructCheck(urlId, response));
-        } catch (Exception e) {
-            log.error("Error while checking url {}", urlId, e);
-            return UrlProcessingResult.checkError();
-        }
-
-        return UrlProcessingResult.checkSuccess(urlId);
+        urlCheckRepository.save(constructCheck(urlId, response));
     }
 
-    public Map<Long, UrlCheck> findLatestForUrls(List<Long> urlIds) {
-        try {
-            return urlCheckRepository.findLatestForUrls(urlIds);
-        } catch (SQLException e) {
-            throw new DatabaseAccessException("Failed to fetch latest UrlChecks for Urls: " + urlIds);
-        }
+    @SneakyThrows(SQLException.class)
+    public ListUrlsResponse listUrls() {
+        List<Url> urls = urlRepository.findAll();
+        List<Long> ids = urls.stream().map(Url::id).toList();
+        Map<Long, UrlCheck> latestChecks = urlCheckRepository.findLatestForUrls(ids);
+
+        return new ListUrlsResponse(urls, latestChecks);
     }
 
-    public List<UrlCheck> findByUrlId(Long urlId) {
-        try {
-            return urlCheckRepository.findByUrlId(urlId);
-        } catch (SQLException e) {
-            throw new DatabaseAccessException("Failed to fetch checks by Url: " + urlId);
-        }
-    }
+    @SneakyThrows(SQLException.class)
+    public ShowUrlResponse showUrl(long id) {
+        Url url = urlRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("URL not found"));
+        List<UrlCheck> checks = urlCheckRepository.findByUrlId(id);
 
-    public Optional<Url> findById(Long id) {
-        try {
-            return urlRepository.findById(id);
-        } catch (SQLException e) {
-            throw new DatabaseAccessException("Failed to fetch Url by id: " + id);
-        }
-    }
-
-    public List<Url> findAll() {
-        try {
-            return urlRepository.findAll();
-        } catch (SQLException e) {
-            throw new DatabaseAccessException("Failed to fetch all Urls");
-        }
+        return new ShowUrlResponse(url, checks);
     }
 
     private UrlCheck constructCheck(Long urlId, HttpResponse<String> response) {
@@ -106,49 +69,5 @@ public record UrlService(UrlRepository urlRepository, UrlCheckRepository urlChec
         String description = descriptionElement == null ? "" : descriptionElement.attr("content");
 
         return new UrlCheck(urlId, status, title, h1, description);
-    }
-
-    @Getter
-    @RequiredArgsConstructor
-    public static class UrlProcessingResult {
-        private final boolean success;
-        private final FlashMessage flashMessage;
-        private final String redirectPath;
-
-        public static UrlProcessingResult success() {
-            return new UrlProcessingResult(true,
-                    new FlashMessage("Страница успешно добавлена", FlashType.SUCCESS),
-                    NamedRoutes.urlsPath());
-        }
-
-        public static UrlProcessingResult alreadyExists() {
-            return new UrlProcessingResult(false,
-                    new FlashMessage("Страница уже существует", FlashType.WARNING),
-                    NamedRoutes.urlsPath());
-        }
-
-        public static UrlProcessingResult invalidUrl() {
-            return new UrlProcessingResult(false,
-                    new FlashMessage("Некорректный URL", FlashType.DANGER),
-                    NamedRoutes.rootPath());
-        }
-
-        public static UrlProcessingResult error() {
-            return new UrlProcessingResult(false,
-                    new FlashMessage("Ошибка при добавлении", FlashType.DANGER),
-                    NamedRoutes.rootPath());
-        }
-
-        public static UrlProcessingResult checkSuccess(Long urlId) {
-            return new UrlProcessingResult(true,
-                    new FlashMessage("Проверка успешно добавлена", FlashType.SUCCESS),
-                    NamedRoutes.urlsPath() + "/" + urlId);
-        }
-
-        public static UrlProcessingResult checkError() {
-            return new UrlProcessingResult(false,
-                    new FlashMessage("Ошибка проверки", FlashType.DANGER),
-                    NamedRoutes.urlsPath());
-        }
     }
 }

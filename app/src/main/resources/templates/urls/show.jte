@@ -24,7 +24,7 @@ content = @`
                     <dd class="col-sm-10">${page.getUrl().name()}</dd>
 
                     <dt class="col-sm-2">Создан</dt>
-                    <dd class="col-sm-10">${page.getUrl().createdAt().toLocalDateTime().format(formatter)}</dd>
+                    <dd class="col-sm-10">${page.getUrl().createdAt().format(formatter)}</dd>
                 </dl>
             </div>
         </div>

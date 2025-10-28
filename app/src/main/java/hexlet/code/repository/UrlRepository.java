@@ -71,7 +71,7 @@ public final class UrlRepository extends BaseRepository {
         return new Url(
                 resultSet.getLong("id"),
                 resultSet.getString("name"),
-                resultSet.getTimestamp("created_at")
+                resultSet.getTimestamp("created_at").toLocalDateTime()
         );
     }
 }

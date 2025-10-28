@@ -1,6 +1,8 @@
 package hexlet.code.service;
 
 import hexlet.code.BaseTest;
+import hexlet.code.exception.InvalidUrlException;
+import hexlet.code.exception.UrlAlreadyExistsException;
 import hexlet.code.model.Url;
 import hexlet.code.model.UrlCheck;
 import hexlet.code.repository.UrlCheckRepository;
@@ -16,6 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 final class UrlServiceTest extends BaseTest {
     private UrlRepository urlRepository;
@@ -31,39 +34,33 @@ final class UrlServiceTest extends BaseTest {
 
     @Test
     void testCreateUrlSuccessAndFind() throws SQLException {
-        UrlService.UrlProcessingResult result = urlService.createUrl("https://example.com/some/path");
-
-        assertThat(result.isSuccess()).isTrue();
-        assertThat(result.getFlashMessage().message()).isEqualTo("Страница успешно добавлена");
+        urlService.createUrl("https://example.com/some/path");
 
         Optional<Url> maybe = urlRepository.findByName("https://example.com");
         assertThat(maybe).isPresent();
         Url url = maybe.orElseThrow();
         assertThat(url.name()).isEqualTo("https://example.com");
+        assertThat(url.id()).isNotNull();
 
-        List<Url> urls = urlService.findAll();
+        List<Url> urls = urlRepository.findAll();
         assertThat(urls).isNotEmpty();
-        assertThat(urlService.findById(url.id())).isPresent();
+        assertThat(urlRepository.findById(url.id())).isPresent();
     }
 
     @Test
-    void testCreateUrlInvalid() {
-        UrlService.UrlProcessingResult result = urlService.createUrl("not a url");
-        assertThat(result.isSuccess()).isFalse();
-        assertThat(result.getFlashMessage().message()).isEqualTo("Некорректный URL");
+    void testCreateUrlInvalid() throws SQLException {
+        assertThrows(InvalidUrlException.class, () -> urlService.createUrl("not a url"));
 
-        List<Url> urls = urlService.findAll();
+        List<Url> urls = urlRepository.findAll();
         assertThat(urls).isEmpty();
     }
 
     @Test
     void testCreateUrlAlreadyExists() throws SQLException {
         urlRepository.save("https://example.com");
-        UrlService.UrlProcessingResult result = urlService.createUrl("https://example.com/some");
-        assertThat(result.isSuccess()).isFalse();
-        assertThat(result.getFlashMessage().message()).isEqualTo("Страница уже существует");
+        assertThrows(UrlAlreadyExistsException.class, () -> urlService.createUrl("https://example.com/some"));
 
-        List<Url> urls = urlService.findAll();
+        List<Url> urls = urlRepository.findAll();
         assertThat(urls).hasSize(1);
     }
 
@@ -76,9 +73,7 @@ final class UrlServiceTest extends BaseTest {
         urlRepository.save(baseUrl);
         Url url = urlRepository.findByName(baseUrl).orElseThrow();
 
-        UrlService.UrlProcessingResult result = urlService.createCheck(url.id());
-        assertThat(result.isSuccess()).isTrue();
-        assertThat(result.getFlashMessage().message()).isEqualTo("Проверка успешно добавлена");
+        urlService.createCheck(url.id());
 
         List<UrlCheck> checks = urlCheckRepository.findByUrlId(url.id());
         assertThat(checks).isNotEmpty();
@@ -97,9 +92,7 @@ final class UrlServiceTest extends BaseTest {
         urlRepository.save(baseUrl);
         Url url = urlRepository.findByName(baseUrl).orElseThrow();
 
-        UrlService.UrlProcessingResult result = urlService.createCheck(url.id());
-        assertThat(result.isSuccess()).isFalse();
-        assertThat(result.getFlashMessage().message()).isEqualTo("Ошибка проверки");
+        assertThrows(Exception.class, () -> urlService.createCheck(url.id()));
 
         List<UrlCheck> checks = urlCheckRepository.findByUrlId(url.id());
         assertThat(checks).isEmpty();
@@ -116,7 +109,7 @@ final class UrlServiceTest extends BaseTest {
         urlCheckRepository.save(new UrlCheck(a.id(), HttpStatus.CREATED.getCode(), "t2", "h2", "d2"));
         urlCheckRepository.save(new UrlCheck(b.id(), HttpStatus.INTERNAL_SERVER_ERROR.getCode(), "tb", "hb", "db"));
 
-        Map<Long, UrlCheck> latest = urlService.findLatestForUrls(List.of(a.id(), b.id()));
+        Map<Long, UrlCheck> latest = urlCheckRepository.findLatestForUrls(List.of(a.id(), b.id()));
         assertThat(latest).hasSize(2);
         assertThat(latest.get(a.id()).statusCode()).isEqualTo(HttpStatus.CREATED.getCode());
         assertThat(latest.get(b.id()).statusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.getCode());
